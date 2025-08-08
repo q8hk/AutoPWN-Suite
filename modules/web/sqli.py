@@ -37,7 +37,7 @@ class TestSQLI:
                 continue
 
             try:
-                response = get(test_url, verify=False)
+                response = get(test_url, verify=False, timeout=10)
             except ConnectionError:
                 self.log.logger(
                     "error", f"Connection error raised on: {test_url}, skipping"

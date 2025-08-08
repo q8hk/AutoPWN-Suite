@@ -12,7 +12,12 @@ def crawl(target_url, log) -> set[str]:
         target_url += "/"
 
     try:
-        get(target_url, headers={"User-Agent": next(random_user_agent(log))}, verify=False)
+        get(
+            target_url,
+            headers={"User-Agent": next(random_user_agent(log))},
+            verify=False,
+            timeout=10,
+        )
     except ConnectionError:
         log.logger("error", f"Connection error raised.")
         return set()
@@ -39,7 +44,12 @@ def link_finder(target_url, log) -> set[str]:
 
     urls = set()
 
-    reqs = get(target_url, headers={"User-Agent": next(random_user_agent(log))}, verify=False)
+    reqs = get(
+        target_url,
+        headers={"User-Agent": next(random_user_agent(log))},
+        verify=False,
+        timeout=10,
+    )
     soup = BeautifulSoup(reqs.text, "html.parser")
     for link in soup.find_all("a", href=True):
         url = link["href"]
