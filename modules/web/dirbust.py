@@ -7,7 +7,7 @@ from requests import packages
 
 packages.urllib3.disable_warnings()
 
-def dirbust(target_url, console, log) -> None:
+def dirbust(target_url, console, log, timeout=10) -> None:
     if not target_url.endswith("/"):
         target_url += "/"
 
@@ -30,7 +30,7 @@ def dirbust(target_url, console, log) -> None:
         headers = {"User-Agent": next(random_user_agent(log))}
 
         try:
-            req = get(test_url, headers=headers, verify=False)
+            req = get(test_url, headers=headers, verify=False, timeout=timeout)
         except Exception as e:
             log.logger("error", e)
         else:
