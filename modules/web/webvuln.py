@@ -54,7 +54,7 @@ def webvuln(target, log, console) -> None:
 
     banner(f"Testing web application on {target} ...", "purple", console)
 
-    dirbust(target_url, console, log)
+    dirbust(target_url, console, log, timeout=10)
 
     for url in testable_urls:
         LFI.test_lfi(url)
