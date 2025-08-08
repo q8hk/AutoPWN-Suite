@@ -40,7 +40,7 @@ class TestSQLI:
                 response = get(test_url, verify=False)
             except ConnectionError:
                 self.log.logger(
-                    "errro", f"Connection error raised on: {test_url}, skipping"
+                    "error", f"Connection error raised on: {test_url}, skipping"
                 )
             else:
                 for error in self.sql_dbms_errors:
