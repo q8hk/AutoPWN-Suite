@@ -1,6 +1,7 @@
 from threading import main_thread
 from requests import get
 from requests import packages
+from requests.exceptions import ConnectionError
 
 
 packages.urllib3.disable_warnings()
