@@ -3,6 +3,7 @@ from string import ascii_letters
 
 from requests import get
 from requests import packages
+from requests.exceptions import ConnectionError
 
 
 packages.urllib3.disable_warnings()
