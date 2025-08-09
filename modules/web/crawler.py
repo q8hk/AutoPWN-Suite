@@ -1,8 +1,8 @@
 from bs4 import BeautifulSoup
-from modules.random_user_agent import random_user_agent
-from requests import get
-from requests import packages
+from requests import get, packages
 from requests.exceptions import ConnectionError
+
+from modules.random_user_agent import random_user_agent
 
 
 packages.urllib3.disable_warnings()
