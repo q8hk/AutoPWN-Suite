@@ -1,4 +1,5 @@
 from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor
 
 from rich.console import Console
 
@@ -47,19 +48,28 @@ def StartScanning(
     ScanPorts, ScanVulns, DownloadExploits = UserConfirmation()
     ScanWeb = WebScan()
 
-    for host in Targets:
-        if ScanPorts:
-            PortScanResults = PortScan(
-                host, log, args.speed, args.host_timeout, scanmode, args.nmap_flags
-            )
-            PortArray = AnalyseScanResults(PortScanResults, log, console, host)
-            if ScanVulns and len(PortArray) > 0:
-                VulnsArray = SearchSploits(PortArray, log, console, console2, apiKey)
-                if DownloadExploits and len(VulnsArray) > 0:
-                    GetExploitsFromArray(VulnsArray, log, console, console2, host)
+    def scan_host(host):
+        PortScanResults = PortScan(
+            host, log, args.speed, args.host_timeout, scanmode, args.nmap_flags
+        )
+        PortArray = AnalyseScanResults(PortScanResults, log, console, host)
+        if ScanVulns and len(PortArray) > 0:
+            VulnsArray = SearchSploits(PortArray, log, console, console2, apiKey)
+            if DownloadExploits and len(VulnsArray) > 0:
+                GetExploitsFromArray(VulnsArray, log, console, console2, host)
 
-        if ScanWeb:
-            webvuln(host, log, console)
+    def scan_web(host):
+        webvuln(host, log, console)
+
+    with ThreadPoolExecutor(max_workers=args.threads) as executor:
+        futures = []
+        for host in Targets:
+            if ScanPorts:
+                futures.append(executor.submit(scan_host, host))
+            if ScanWeb:
+                futures.append(executor.submit(scan_web, host))
+        for future in futures:
+            future.result()
 
     console.print(
         "{time} - Scan completed.".format(

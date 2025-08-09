@@ -133,6 +133,14 @@ def cli():
         required=False,
     )
     scanargs.add_argument(
+        "-th",
+        "--threads",
+        help="Number of threads for concurrent scans. (Default : 4)",
+        default=4,
+        type=int,
+        required=False,
+    )
+    scanargs.add_argument(
         "-a",
         "--api",
         help=(
@@ -808,6 +816,9 @@ def ParamPrint(
 
     if not args.host_timeout == 240:
         msg += f"│\tHost timeout: {args.host_timeout}\n"
+
+    if not args.threads == 4:
+        msg += f"│\tThreads: {args.threads}\n"
 
     if scanmode_name == ScanMode.Normal:
         msg += (
