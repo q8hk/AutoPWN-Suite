@@ -1,5 +1,5 @@
-requests
-rich
-python-nmap
-bs4
-distro
+requests==2.32.4
+rich==14.1.0
+python-nmap==0.7.1
+bs4==0.0.2
+distro==1.9.0
