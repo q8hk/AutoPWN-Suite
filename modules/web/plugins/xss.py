@@ -1,3 +1,4 @@
+from modules.web.plugins import WebTest
 from random import choices, randint
 from string import ascii_letters
 
@@ -8,10 +9,9 @@ from requests.exceptions import ConnectionError
 
 packages.urllib3.disable_warnings()
 
-class TestXSS:
+class TestXSS(WebTest):
     def __init__(self, log, console) -> None:
-        self.log = log
-        self.console = console
+        super().__init__(log, console)
         self.tested_urls = []
         self.xss_test = [
             r"<script>alert('PAYLOAD')</script>",
@@ -71,7 +71,7 @@ class TestXSS:
                         )
                         break
 
-    def test_xss(self, url) -> None:
+    def run(self, url) -> None:
         """
         Tets for XSS
         """

@@ -1,3 +1,4 @@
+from modules.web.plugins import WebTest
 from requests import get
 from requests import packages
 from requests.exceptions import ConnectionError
@@ -5,10 +6,9 @@ from requests.exceptions import ConnectionError
 
 packages.urllib3.disable_warnings()
 
-class TestSQLI:
+class TestSQLI(WebTest):
     def __init__(self, log, console) -> None:
-        self.log = log
-        self.console = console
+        super().__init__(log, console)
         self.tested_urls = []
         self.sqli_test = "'1"
         self.sql_dbms_errors = [
@@ -51,7 +51,7 @@ class TestSQLI:
                         )
                         break
 
-    def test_sqli(self, url) -> None:
+    def run(self, url) -> None:
         """
         Test for SQLI
         """

@@ -1,3 +1,4 @@
+from modules.web.plugins import WebTest
 from requests import get
 from requests import packages
 from requests.exceptions import ConnectionError
@@ -5,10 +6,9 @@ from requests.exceptions import ConnectionError
 
 packages.urllib3.disable_warnings()
 
-class TestLFI:
+class TestLFI(WebTest):
     def __init__(self, log, console) -> None:
-        self.log = log
-        self.console = console
+        super().__init__(log, console)
         self.tested_urls = []
         self.lfi_tests = [
             r"../../../../../etc/passwd",
@@ -91,7 +91,7 @@ class TestLFI:
                         )
                         break
 
-    def test_lfi(self, url) -> None:
+    def run(self, url) -> None:
         """
         Test for LFI
         """
