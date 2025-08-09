@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from time import sleep
 
 from requests import get
+from requests.exceptions import ConnectionError
 
 
 cache = {}
@@ -68,19 +69,31 @@ def searchCVE(keyword: str, log, apiKey=None) -> list[Vulnerability]:
     if keyword in cache:
         return cache[keyword]
 
+    data = {}
     for tries in range(3):
+        response = None
         try:
             sleep(sleep_time)
-            response = get(url, params=parameters, headers=headers)
+            response = get(url, params=parameters, headers=headers, timeout=10)
             data = response.json()
+        except ConnectionError as e:
+            log.logger(
+                "error",
+                f"Connection error while querying NIST API: {e}",
+            )
         except Exception as e:
-            if response.status_code == 403:
+            if response is not None and response.status_code == 403:
                 log.logger(
                     "error",
                     "Requests are being rate limited by NIST API,"
                     + " please get a NIST API key to prevent this.",
                 )
                 sleep(sleep_time)
+            else:
+                log.logger(
+                    "error",
+                    f"Error querying NIST API: {e}",
+                )
         else:
             break
 
