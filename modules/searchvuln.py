@@ -1,8 +1,10 @@
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from textwrap import wrap
+import json
+from pathlib import Path
 
 from modules.logger import banner
-from modules.nist_search import searchCVE
+from modules.nist_search import Vulnerability, searchCVE
 from modules.utils import CheckConnection, get_terminal_width
 from rich.progress_bar import ProgressBar
 
@@ -11,6 +13,42 @@ from rich.progress_bar import ProgressBar
 class VulnerableSoftware:
     title: str
     CVEs: list
+
+
+# Cache file for storing previously fetched CVE results
+CACHE_FILE = Path(__file__).resolve().parent / "data" / "cve_cache.json"
+keyword_cache = {}
+
+
+def load_cache() -> None:
+    """Load cached CVE results from disk if available."""
+    if not CACHE_FILE.exists():
+        return
+    try:
+        with open(CACHE_FILE, "r") as f:
+            data = json.load(f)
+        for key, cves in data.items():
+            keyword_cache[key] = [Vulnerability(**cve) for cve in cves]
+    except Exception:
+        # Ignore cache loading errors
+        pass
+
+
+def save_cache() -> None:
+    """Persist cached CVE results to disk."""
+    try:
+        CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
+        serializable = {
+            key: [asdict(cve) for cve in cves] for key, cves in keyword_cache.items()
+        }
+        with open(CACHE_FILE, "w") as f:
+            json.dump(serializable, f)
+    except Exception:
+        # Ignore cache saving errors
+        pass
+
+
+load_cache()
 
 
 def GenerateKeyword(product: str, version: str) -> str:
@@ -57,6 +95,8 @@ def GenerateKeywords(HostArray: list) -> list:
 
 
 def SearchKeyword(keyword: str, log, apiKey=None) -> list:
+    if keyword in keyword_cache:
+        return keyword_cache[keyword]
 
     try:
         ApiResponseCVE = searchCVE(keyword, log, apiKey)
@@ -65,6 +105,8 @@ def SearchKeyword(keyword: str, log, apiKey=None) -> list:
     except Exception as e:
         log.logger("error", e)
     else:
+        keyword_cache[keyword] = ApiResponseCVE
+        save_cache()
         return ApiResponseCVE
 
     return []
