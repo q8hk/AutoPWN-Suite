@@ -5,8 +5,7 @@ from modules.web.dirbust import dirbust
 from modules.web.lfi import TestLFI
 from modules.web.sqli import TestSQLI
 from modules.web.xss import TestXSS
-from requests import get
-from requests import packages
+from requests import get, packages
 
 
 packages.urllib3.disable_warnings()
