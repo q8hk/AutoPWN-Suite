@@ -2,10 +2,13 @@ from modules.logger import banner
 from modules.random_user_agent import random_user_agent
 from modules.web.crawler import crawl
 from modules.web.dirbust import dirbust
-from modules.web.lfi import TestLFI
-from modules.web.sqli import TestSQLI
-from modules.web.xss import TestXSS
-from requests import get, packages
+import importlib
+import pkgutil
+from modules.web import plugins
+from modules.web.plugins import WebTest
+from requests import get
+from requests import packages
+
 
 
 packages.urllib3.disable_warnings()
@@ -16,10 +19,12 @@ def webvuln(target, log, console) -> None:
     Test for web vulnerabilities
     """
 
-    LFI = TestLFI(log, console)
-    SQLI = TestSQLI(log, console)
-    XSS = TestXSS(log, console)
 
+    tests = []
+    for _, module_name, _ in pkgutil.iter_modules(plugins.__path__):
+        importlib.import_module(f'{plugins.__name__}.{module_name}')
+    for cls in WebTest.__subclasses__():
+        tests.append(cls(log, console))
     def get_url(target):
         """
         Get the target url
@@ -56,7 +61,6 @@ def webvuln(target, log, console) -> None:
     dirbust(target_url, console, log, timeout=10)
 
     for url in testable_urls:
-        LFI.test_lfi(url)
-        SQLI.test_sqli(url)
-        XSS.test_xss(url)
+        for test in tests:
+            test.run(url)
         tested_urls.append(url)
