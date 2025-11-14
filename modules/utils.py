@@ -22,6 +22,9 @@ from rich.text import Text
 from modules.report import ReportMail, ReportType
 
 
+DontAskForConfirmation = False
+
+
 class ScanMode(Enum):
     Normal = 0
     Noise = 1
@@ -141,6 +144,20 @@ def cli():
         required=False,
     )
     scanargs.add_argument(
+        "--scan-ports",
+        dest="scan_ports",
+        action="store_true",
+        help="Force enable the port scanning phase without prompting.",
+        required=False,
+    )
+    scanargs.add_argument(
+        "--no-scan-ports",
+        dest="scan_ports",
+        action="store_false",
+        help="Skip the port scanning phase.",
+        required=False,
+    )
+    scanargs.add_argument(
         "-a",
         "--api",
         help=(
@@ -152,6 +169,34 @@ def cli():
         required=False,
     )
     scanargs.add_argument(
+        "--scan-vulns",
+        dest="scan_vulns",
+        action="store_true",
+        help="Force enable vulnerability lookups without prompting.",
+        required=False,
+    )
+    scanargs.add_argument(
+        "--no-scan-vulns",
+        dest="scan_vulns",
+        action="store_false",
+        help="Skip vulnerability lookups after port scanning.",
+        required=False,
+    )
+    scanargs.add_argument(
+        "--download-exploits",
+        dest="download_exploits",
+        action="store_true",
+        help="Automatically download exploits for discovered vulnerabilities.",
+        required=False,
+    )
+    scanargs.add_argument(
+        "--no-download-exploits",
+        dest="download_exploits",
+        action="store_false",
+        help="Skip downloading exploits for discovered vulnerabilities.",
+        required=False,
+    )
+    scanargs.add_argument(
         "-m",
         "--mode",
         help="Scan mode.",
@@ -159,6 +204,20 @@ def cli():
         type=str,
         required=False,
         choices=["evade", "noise", "normal"],
+    )
+    scanargs.add_argument(
+        "--scan-web",
+        dest="scan_web",
+        action="store_true",
+        help="Force enable web vulnerability scanning.",
+        required=False,
+    )
+    scanargs.add_argument(
+        "--no-scan-web",
+        dest="scan_web",
+        action="store_false",
+        help="Skip web vulnerability scanning.",
+        required=False,
     )
     scanargs.add_argument(
         "-nt",
@@ -261,6 +320,13 @@ def cli():
         metavar="WEBHOOK",
     )
 
+    argparser.set_defaults(
+        scan_ports=None,
+        scan_vulns=None,
+        download_exploits=None,
+        scan_web=None,
+    )
+
     return argparser.parse_args()
 
 
@@ -322,12 +388,16 @@ def DetectIPRange() -> str:
     return net_range
 
 
-def InitAutomation(args) -> None:
+def InitAutomation(args) -> bool:
     global DontAskForConfirmation
     if args.yes_please:
         DontAskForConfirmation = True
     else:
         DontAskForConfirmation = False
+
+    setattr(args, "automation", DontAskForConfirmation)
+
+    return DontAskForConfirmation
 
 
 def InitArgsAPI(args, log) -> str:
